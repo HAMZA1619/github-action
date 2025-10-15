@@ -1,12 +1,12 @@
 name: Puppeteer Workflow
 
 on:
-  push:                    # ⬅️ Deploy on push
+  push:                    # Deploy only on push
     branches:
       - main
-  schedule:                # ⬅️ Run every minute automatically
+  schedule:                # Run Puppeteer every minute
     - cron: "*/1 * * * *"
-  workflow_dispatch:       # ⬅️ Allow manual runs
+  workflow_dispatch:       # Allow manual trigger
 
 jobs:
   puppeteer:
@@ -66,12 +66,24 @@ jobs:
       - name: Run Puppeteer script
         run: node puppeteer-script.js
 
-      - name: Generate screenshots index
+      - name: Commit and push screenshots
         run: |
-          mkdir -p public/screenshots
-          cd public/screenshots
-          ls *.png > index.txt || true
-          node -e "const fs=require('fs'); const arr=(fs.existsSync('index.txt')?fs.readFileSync('index.txt','utf-8').split('\n').filter(Boolean):[]); fs.writeFileSync('index.json', JSON.stringify(arr,null,2));"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/screenshots || true
+          git commit -m "🖼️ New screenshot at $(date)" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy:
+    if: github.event_name == 'push'  # ⬅️ Only run this job when you push to main
+    runs-on: ubuntu-latest
+    needs: puppeteer
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
