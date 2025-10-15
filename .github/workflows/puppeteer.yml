@@ -1,9 +1,12 @@
 name: Puppeteer Workflow
 
 on:
-  schedule:
-    - cron: "*/1 * * * *"  
-  workflow_dispatch:
+  push:                    # ⬅️ Deploy on push
+    branches:
+      - main
+  schedule:                # ⬅️ Run every minute automatically
+    - cron: "*/1 * * * *"
+  workflow_dispatch:       # ⬅️ Allow manual runs
 
 jobs:
   puppeteer:
@@ -11,12 +14,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 20
 
       - name: Install dependencies
         run: npm ci
@@ -65,9 +68,10 @@ jobs:
 
       - name: Generate screenshots index
         run: |
+          mkdir -p public/screenshots
           cd public/screenshots
-          ls *.png > index.txt
-          node -e "const fs=require('fs'); fs.writeFileSync('index.json', JSON.stringify(fs.readFileSync('index.txt','utf-8').split('\n').filter(Boolean)))"
+          ls *.png > index.txt || true
+          node -e "const fs=require('fs'); const arr=(fs.existsSync('index.txt')?fs.readFileSync('index.txt','utf-8').split('\n').filter(Boolean):[]); fs.writeFileSync('index.json', JSON.stringify(arr,null,2));"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
