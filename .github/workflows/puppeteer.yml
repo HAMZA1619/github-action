@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  run-puppeteer:
+  puppeteer:
     runs-on: ubuntu-latest
 
     steps:
@@ -64,8 +64,14 @@ jobs:
       - name: Run Puppeteer script
         run: node puppeteer-script.js
 
-      - name: Upload screenshots
-        uses: actions/upload-artifact@v4
+      - name: Generate screenshots index
+        run: |
+          cd public/screenshots
+          ls *.png > index.txt
+          node -e "const fs=require('fs'); fs.writeFileSync('index.json', JSON.stringify(fs.readFileSync('index.txt','utf-8').split('\n').filter(Boolean)))"
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v6
         with:
-          name: screenshots
-          path: screenshots/
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public

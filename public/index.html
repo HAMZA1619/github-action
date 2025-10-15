@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Puppeteer Screenshots</title>
+</head>
+<body>
+  <h1>Puppeteer Screenshots</h1>
+  <div id="gallery"></div>
+
+  <script>
+    fetch('./screenshots/index.json')
+      .then(r => r.json())
+      .then(files => {
+        const container = document.getElementById('gallery');
+        files.forEach(f => {
+          const img = document.createElement('img');
+          img.src = './screenshots/' + f;
+          img.style.width = '300px';
+          img.style.margin = '10px';
+          container.appendChild(img);
+        });
+      });
+  </script>
+</body>
+</html>
