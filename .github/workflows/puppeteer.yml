@@ -4,9 +4,7 @@ on:
   push:                    # Deploy only on push
     branches:
       - main
-  schedule:                # Run Puppeteer every minute
-    - cron: "*/1 * * * *"
-  workflow_dispatch:       # Allow manual trigger
+
 
 jobs:
   puppeteer:
